@@ -1,19 +1,21 @@
 import random
 import math
 
-def simulatedAnnealingSearch(problem):
+def simulatedAnnealingSearch(problem, T0=1000.0, alpha=0.995, Tmin=0.01,
+                             max_iters=None, return_stats=False):
     """
     Busca caminhos através do algoritmo Simulated Annealing (Têmpera Simulada).
+    max_iters    -- teto de iterações como salvaguarda (None = sem teto).
+    return_stats -- se True, devolve (caminho, iteracoes, reaquecimentos,
+                    concluiu) em vez de apenas o caminho de ações.
     """
-    # Variáveis mandatórias da especificação
-    T = 1000.0
-    alpha = 0.995
-    Tmin = 0.01
+    # Temperatura inicial do sistema
+    T = T0
 
     # Estado inicial do Pac-Man
     start_state = problem.getStartState()
     current_state = start_state
-    
+
     # Histórico para reconstrução e otimização do caminho (poda de ciclos)
     state_history = [current_state]
     action_path = []
@@ -29,16 +31,27 @@ def simulatedAnnealingSearch(problem):
             return abs(state[0] - goal[0]) + abs(state[1] - goal[1])
         return 0
 
+    iterations = 0   # quantos passos do laço principal foram dados
+    reheats = 0      # quantas vezes a temperatura foi reaquecida
+    finished = True  # se a meta foi alcançada (False se estourar max_iters)
+
     # Loop principal até encontrar o estado final
     while not problem.isGoalState(current_state):
+        iterations += 1
+        # Salvaguarda opcional (usada pelo benchmark): evita laço infinito numa
+        # configuração ruim de hiperparâmetros.
+        if max_iters is not None and iterations > max_iters:
+            finished = False
+            break
+
         successors = problem.getSuccessors(current_state)
-        
+
         if not successors:
             # Caso encontre um beco sem saída absoluto, reinicia o estado
             current_state = start_state
             state_history = [start_state]
             action_path = []
-            T = 1000.0
+            T = T0
             continue
 
         # Seleciona um sucessor aleatório (vizinhança)
@@ -68,7 +81,7 @@ def simulatedAnnealingSearch(problem):
             else:
                 state_history.append(next_state)
                 action_path.append(action)
-            
+
             current_state = next_state
 
         # Resfriamento do sistema
@@ -76,8 +89,11 @@ def simulatedAnnealingSearch(problem):
 
         # Estratégia de reaquecimento adaptativo para evitar congelamento precoce
         if T < Tmin and not problem.isGoalState(current_state):
-            T = 1000.0
+            T = T0
+            reheats += 1
 
+    if return_stats:
+        return action_path, iterations, reheats, finished
     return action_path
 
 # Definição obrigatória do alias de função conforme a especificação
