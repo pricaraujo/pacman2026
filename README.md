@@ -1,7 +1,5 @@
 # Pac-Man: Way of the Katana - Documentação e Código
 
-Este arquivo contém a documentação completa e o código-fonte estruturado para o projeto da disciplina MATA64 - Inteligência Artificial. O conteúdo abaixo foi elaborado rigorosamente de acordo com as diretrizes do documento Especificacao-Trabalho-pacman-20261.pdf.
-
 ---
 
 ## 1. Descrição do Projeto
